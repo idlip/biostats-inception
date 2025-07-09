@@ -199,3 +199,51 @@ def build_inception_model(num_classes=1):
     
     return model, base_model
 
+# 7. TRAINING FUNCTION
+def train_model(model, train_dataset, val_dataset, class_weights, steps_per_epoch=None):
+    """
+    Compile and train the model
+    """
+    # Compile model
+    model.compile(
+        optimizer=Adam(learning_rate=LEARNING_RATE),
+        loss='binary_crossentropy',
+        metrics=['accuracy', tf.keras.metrics.Precision(), 
+                 tf.keras.metrics.Recall(), tf.keras.metrics.AUC()]
+    )
+    
+    # Callbacks
+    callbacks = [
+        EarlyStopping(
+            monitor='val_loss',
+            patience=10,
+            restore_best_weights=True,
+            verbose=1
+        ),
+        ReduceLROnPlateau(
+            monitor='val_loss',
+            factor=0.5,
+            patience=5,
+            min_lr=1e-7,
+            verbose=1
+        ),
+        ModelCheckpoint(
+            'best_pneumonia_model.h5',
+            monitor='val_auc',
+            save_best_only=True,
+            mode='max',
+            verbose=1
+        )
+    ]
+    
+    # Train the model
+    history = model.fit(
+        train_dataset,
+        epochs=EPOCHS,
+        validation_data=val_dataset,
+        class_weight=class_weights,
+        callbacks=callbacks,
+        verbose=1
+    )
+    
+    return history
