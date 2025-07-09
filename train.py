@@ -23,3 +23,42 @@ from sklearn.metrics import classification_report, confusion_matrix, roc_auc_sco
 from sklearn.utils.class_weight import compute_class_weight
 import seaborn as sns
 
+# Set parameters
+IMG_SIZE = 299  # InceptionV3 input size
+BATCH_SIZE = 32
+EPOCHS = 50
+LEARNING_RATE = 0.0001
+
+# 1. LOAD DATA FROM NPZ FILE
+def load_data_from_npz(npz_path):
+    """
+    Load data from NPZ file containing numpy arrays
+    
+    Args:
+        npz_path: Path to the NPZ file
+    
+    Returns:
+        Dictionary containing all arrays
+    """
+    print(f"Loading data from {npz_path}...")
+    data = np.load(npz_path)
+    
+    # Extract all arrays
+    train_images = data['train_images.npy']
+    train_labels = data['train_labels.npy']
+    val_images = data['val_images.npy']
+    val_labels = data['val_labels.npy']
+    test_images = data['test_images.npy']
+    test_labels = data['test_labels.npy']
+    
+    print(f"Training samples: {len(train_images)}")
+    print(f"Validation samples: {len(val_images)}")
+    print(f"Test samples: {len(test_images)}")
+    print(f"Image shape: {train_images[0].shape}")
+    
+    return {
+        'train': (train_images, train_labels),
+        'val': (val_images, val_labels),
+        'test': (test_images, test_labels)
+    }
+
