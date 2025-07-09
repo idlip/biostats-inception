@@ -115,3 +115,35 @@ def augment_image(image):
     
     return image
 
+# 4. CREATE TF.DATA DATASETS
+def create_datasets(data_dict, batch_size=32, augment_train=True):
+    """
+    Create tf.data.Dataset objects for training, validation, and testing
+    """
+    # Preprocess all images
+    train_images = preprocess_images(data_dict['train'][0])
+    train_labels = data_dict['train'][1]
+    val_images = preprocess_images(data_dict['val'][0])
+    val_labels = data_dict['val'][1]
+    test_images = preprocess_images(data_dict['test'][0])
+    test_labels = data_dict['test'][1]
+    
+    # Create training dataset with augmentation
+    train_dataset = tf.data.Dataset.from_tensor_slices((train_images, train_labels))
+    if augment_train:
+        train_dataset = train_dataset.map(
+            lambda x, y: (augment_image(x), y),
+            num_parallel_calls=tf.data.AUTOTUNE
+        )
+    train_dataset = train_dataset.shuffle(buffer_size=1000).batch(batch_size).prefetch(tf.data.AUTOTUNE)
+    
+    # Create validation dataset (no augmentation)
+    val_dataset = tf.data.Dataset.from_tensor_slices((val_images, val_labels))
+    val_dataset = val_dataset.batch(batch_size).prefetch(tf.data.AUTOTUNE)
+    
+    # Create test dataset (no augmentation)
+    test_dataset = tf.data.Dataset.from_tensor_slices((test_images, test_labels))
+    test_dataset = test_dataset.batch(batch_size).prefetch(tf.data.AUTOTUNE)
+    
+    return train_dataset, val_dataset, test_dataset, (train_images, train_labels)
+
