@@ -306,3 +306,78 @@ def evaluate_model_npz(model, test_dataset, test_labels):
         'sensitivity': sensitivity,
         'specificity': specificity
     }
+
+# 9. MAIN EXECUTION FUNCTION
+def main(npz_path):
+    """
+    Main execution function for NPZ data
+    
+    Args:
+        npz_path: Path to your NPZ file
+    """
+    # Load data
+    data_dict = load_data_from_npz(npz_path)
+    
+    # Create datasets
+    train_dataset, val_dataset, test_dataset, (train_images, train_labels) = create_datasets(
+        data_dict, 
+        batch_size=BATCH_SIZE,
+        augment_train=True
+    )
+    
+    # Calculate class weights
+    class_weights = calculate_class_weights_from_labels(train_labels)
+    
+    # Build model
+    model, base_model = build_inception_model()
+    
+    # Initial training
+    print("\n=== INITIAL TRAINING ===")
+    history = train_model(model, train_dataset, val_dataset, class_weights)
+    
+    # Fine-tuning
+    print("\n=== FINE-TUNING ===")
+    # Unfreeze top layers
+    base_model.trainable = True
+    for layer in base_model.layers[:-20]:
+        layer.trainable = False
+    
+    # Recompile with lower learning rate
+    model.compile(
+        optimizer=Adam(learning_rate=LEARNING_RATE/10),
+        loss='binary_crossentropy',
+        metrics=['accuracy', tf.keras.metrics.Precision(), 
+                 tf.keras.metrics.Recall(), tf.keras.metrics.AUC()]
+    )
+    
+    # Continue training
+    history_fine = model.fit(
+        train_dataset,
+        epochs=20,
+        validation_data=val_dataset,
+        class_weight=class_weights,
+        callbacks=[
+            EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True),
+            ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3, min_lr=1e-8)
+        ]
+    )
+    
+    # Evaluate model
+    test_labels = data_dict['test'][1]
+    metrics = evaluate_model_npz(model, test_dataset, test_labels)
+    
+    return model, metrics, history
+
+# 10. Final run
+if __name__ == "__main__":
+    # NPZ_FILE_PATH = "~/projects/biostats/pneumoniamnist.npz"
+    NPZ_FILE_PATH = path
+    
+    # Run the training and evaluation
+    model, metrics, history = main(NPZ_FILE_PATH)
+    
+    # Save the final model
+    model.save('pneumonia_inception_v3_final.h5')
+    print("\nModel saved as 'pneumonia_inception_v3_final.h5'")
+
+
