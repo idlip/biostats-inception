@@ -93,3 +93,25 @@ def preprocess_images(images, target_size=(299, 299)):
     
     return processed_images
 
+# 3. CREATE DATA AUGMENTATION FUNCTION
+def augment_image(image):
+    """
+    Apply data augmentation to a single image
+    """
+    # Random rotation
+    image = tf.image.rot90(image, k=tf.random.uniform(shape=[], minval=0, maxval=4, dtype=tf.int32))
+    
+    # Random flip
+    image = tf.image.random_flip_left_right(image)
+    
+    # Random brightness
+    image = tf.image.random_brightness(image, max_delta=0.2)
+    
+    # Random contrast
+    image = tf.image.random_contrast(image, lower=0.8, upper=1.2)
+    
+    # Ensure values are in [0, 1]
+    image = tf.clip_by_value(image, 0.0, 1.0)
+    
+    return image
+
