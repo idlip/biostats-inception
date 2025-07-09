@@ -247,3 +247,62 @@ def train_model(model, train_dataset, val_dataset, class_weights, steps_per_epoc
     )
     
     return history
+
+# 8. EVALUATION FUNCTION
+def evaluate_model_npz(model, test_dataset, test_labels):
+    """
+    Evaluate model performance
+    """
+    # Get predictions
+    predictions = model.predict(test_dataset)
+    y_pred = (predictions > 0.5).astype(int).reshape(-1)
+    y_true = test_labels
+    
+    print("\n=== MODEL PERFORMANCE ===\n")
+    
+    # Classification Report
+    print("Classification Report:")
+    print(classification_report(y_true, y_pred, 
+                              target_names=['Normal', 'Pneumonia']))
+    
+    # Confusion Matrix
+    cm = confusion_matrix(y_true, y_pred)
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
+                xticklabels=['Normal', 'Pneumonia'],
+                yticklabels=['Normal', 'Pneumonia'])
+    plt.title('Confusion Matrix')
+    plt.ylabel('True Label')
+    plt.xlabel('Predicted Label')
+    plt.show()
+    
+    # ROC-AUC Score
+    auc_score = roc_auc_score(y_true, predictions)
+    print(f"\nROC-AUC Score: {auc_score:.4f}")
+    
+    # Plot ROC Curve
+    fpr, tpr, _ = roc_curve(y_true, predictions)
+    plt.figure(figsize=(8, 6))
+    plt.plot(fpr, tpr, label=f'ROC Curve (AUC = {auc_score:.4f})')
+    plt.plot([0, 1], [0, 1], 'k--', label='Random Classifier')
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('ROC Curve')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+    
+    # Additional metrics
+    tn, fp, fn, tp = cm.ravel()
+    sensitivity = tp / (tp + fn)
+    specificity = tn / (tn + fp)
+    
+    print(f"\nSensitivity (Recall for Pneumonia): {sensitivity:.4f}")
+    print(f"Specificity (Recall for Normal): {specificity:.4f}")
+    
+    return {
+        'confusion_matrix': cm,
+        'auc_score': auc_score,
+        'sensitivity': sensitivity,
+        'specificity': specificity
+    }
