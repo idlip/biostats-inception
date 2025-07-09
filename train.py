@@ -147,3 +147,26 @@ def create_datasets(data_dict, batch_size=32, augment_train=True):
     
     return train_dataset, val_dataset, test_dataset, (train_images, train_labels)
 
+# 5. CALCULATE CLASS WEIGHTS
+def calculate_class_weights_from_labels(labels):
+    """
+    Calculate class weights from label array
+    """
+    unique_classes = np.unique(labels)
+    class_weights = compute_class_weight(
+        'balanced',
+        classes=unique_classes,
+        y=labels
+    )
+    
+    class_weight_dict = dict(zip(unique_classes, class_weights))
+    
+    # Print class distribution
+    class_counts = np.bincount(labels.astype(int))
+    print(f"\nClass distribution:")
+    print(f"Normal (0): {class_counts[0]} samples")
+    print(f"Pneumonia (1): {class_counts[1]} samples")
+    print(f"Class weights: {class_weight_dict}")
+    
+    return class_weight_dict
+
