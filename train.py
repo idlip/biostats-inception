@@ -170,3 +170,32 @@ def calculate_class_weights_from_labels(labels):
     
     return class_weight_dict
 
+# 6. BUILD AND COMPILE MODEL (Same as before)
+def build_inception_model(num_classes=1):
+    """
+    Build InceptionV3 model with custom top layers for binary classification
+    """
+    # Load pre-trained InceptionV3 without top layers
+    base_model = InceptionV3(
+        input_shape=(299, 299, 3),
+        include_top=False,
+        weights='imagenet'
+    )
+    
+    # Freeze base model layers initially
+    base_model.trainable = False
+    
+    # Add custom layers
+    inputs = base_model.input
+    x = base_model.output
+    x = GlobalAveragePooling2D()(x)
+    x = Dense(512, activation='relu')(x)
+    x = Dropout(0.5)(x)
+    x = Dense(256, activation='relu')(x)
+    x = Dropout(0.3)(x)
+    outputs = Dense(num_classes, activation='sigmoid')(x)
+    
+    model = Model(inputs=inputs, outputs=outputs)
+    
+    return model, base_model
+
