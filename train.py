@@ -62,3 +62,34 @@ def load_data_from_npz(npz_path):
         'test': (test_images, test_labels)
     }
 
+# 2. PREPROCESS IMAGES
+def preprocess_images(images, target_size=(299, 299)):
+    """
+    Preprocess images for InceptionV3
+    - Resize to target size if needed
+    - Normalize pixel values
+    """
+    processed_images = []
+    
+    for img in images:
+        # Check if resizing is needed
+        if img.shape[:2] != target_size:
+            img = tf.image.resize(img, target_size)
+        
+        # Ensure the image has 3 channels (RGB)
+        if len(img.shape) == 2:  # Grayscale
+            img = np.stack([img] * 3, axis=-1)
+        elif img.shape[-1] == 1:  # Single channel
+            img = np.concatenate([img] * 3, axis=-1)
+        
+        processed_images.append(img)
+    
+    # Convert to numpy array and normalize
+    processed_images = np.array(processed_images, dtype=np.float32)
+    
+    # Normalize to [0, 1] if not already normalized
+    if processed_images.max() > 1:
+        processed_images = processed_images / 255.0
+    
+    return processed_images
+
