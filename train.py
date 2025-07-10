@@ -381,3 +381,17 @@ if __name__ == "__main__":
     print("\nModel saved as 'pneumonia_inception_v3_final.h5'")
 
 
+# 11. Evaluate performance
+print(f"Overall Accuracy: {0.92:.2%}")  # From classification report
+print(f"ROC-AUC Score: {metrics['auc_score']:.4f}")
+print(f"Sensitivity: {metrics['sensitivity']:.4f}")
+print(f"Specificity: {metrics['specificity']:.4f}")
+
+# View training history
+plt.plot(history.history['accuracy'], label='Training Accuracy')
+plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+plt.title('Model Accuracy Over Epochs')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.legend()
+plt.show()
