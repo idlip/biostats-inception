@@ -1,6 +1,6 @@
 # 🩺 Pneumonia Detection with InceptionV3
 
-A deep learning model that detects pneumonia from chest X-rays with 92% accuracy and 91% sensitivity, providing reliable diagnostic support for healthcare professionals.
+A deep learning model that detects pneumonia from chest X-rays with accuracy and sensitivity, providing reliable diagnostic support for healthcare professionals.
 
 ---
 
@@ -14,6 +14,9 @@ A deep learning model that detects pneumonia from chest X-rays with 92% accuracy
 
 ## 🚀 Quick Start
 - Suggested to use uv python package manager
+- Dataset source: https://www.kaggle.com/datasets/rijulshr/pneumoniamnist/
+- Training code: ./train.py
+    - Can be used in google colab for notebook purpose as well.
 
 1. get UV package/project manager
 ```bash
@@ -52,10 +55,10 @@ chest_xray_data.npz
 
 - Base Model: InceptionV3 (pre-trained on ImageNet)
 - Custom Layers:
--     GlobalAveragePooling2D
--     Dense(512) + Dropout(0.5)
--     Dense(256) + Dropout(0.3)
--     Dense(1, sigmoid)
+- GlobalAveragePooling2D
+- Dense(512) + Dropout(0.5)
+- Dense(256) + Dropout(0.3)
+- Dense(1, sigmoid)
 
 ## 🔮 Future Improvements
 
